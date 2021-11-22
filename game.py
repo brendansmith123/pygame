@@ -1,3 +1,4 @@
+
 # Import and initialize pygame
 import pygame
 from random import randint
@@ -11,17 +12,17 @@ lanes = [93, 218, 343]
 
 # Game Object
 class GameObject(pygame.sprite.Sprite):
-  # Remove width and height and add image here!
-  def __init__(self, x, y, image):
-    super(GameObject, self).__init__()
-    # self.surf = pygame.Surface((width, height)) REMOVE!
-    # self.surf.fill((255, 0, 255)) REMOVE!
-    self.surf = pygame.image.load(image) # ADD!
-    self.x = x
-    self.y = y
+	def __init__(self, x, y, image):
+		super(GameObject, self).__init__()
+		self.surf = pygame.image.load(image)
+		self.x = x
+		self.y = y
+		self.rect = self.surf.get_rect() # add 
 
-  def render(self, screen):
-    screen.blit(self.surf, (self.x, self.y))
+	def render(self, screen):
+		self.rect.x = self.x # add
+		self.rect.y = self.y # add
+		screen.blit(self.surf, (self.x, self.y))
 
 class Apple(GameObject):
   def __init__(self):
@@ -141,7 +142,8 @@ class Player(GameObject):
     self.dx = lanes[self.pos_x]
     self.dy = lanes[self.pos_y]  
 
-all_sprites = pygame.sprite.Group()                  
+all_sprites = pygame.sprite.Group() 
+fruit_sprites = pygame.sprite.Group()                 
 
 apple = Apple()
 strawberry = Strawberry()
@@ -153,6 +155,8 @@ all_sprites.add(player)
 all_sprites.add(apple)
 all_sprites.add(strawberry)
 all_sprites.add(bomb)
+fruit_sprites.add(apple)
+fruit_sprites.add(strawberry)
 
 clock = pygame.time.Clock()
 
@@ -185,6 +189,13 @@ while running:
   player.render(screen)
   bomb.move()
   bomb.render(screen)
+
+  fruit = pygame.sprite.spritecollideany(player, fruit_sprites)
+  if fruit:
+	  fruit.reset()
+
+  if pygame.sprite.collide_rect(player, bomb):
+	  running = False
   # Update the window
   pygame.display.flip()
   # tick the clock!
