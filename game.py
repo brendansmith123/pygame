@@ -4,9 +4,10 @@ from random import randint
 pygame.init()
 import random
 
-lanes = [93, 218, 343]
-# Configure the screen
 screen = pygame.display.set_mode([500, 500])
+
+lanes = [93, 218, 343]
+
 
 # Game Object
 class GameObject(pygame.sprite.Sprite):
@@ -56,6 +57,47 @@ class Strawberry(GameObject):
     self.x = -64
     self.y = random.choice(lanes)
 
+
+class Bomb(GameObject):
+  def __init__(self):
+    super(Bomb, self).__init__(0, 0, 'bomb.png')
+    self.dx = 0
+    self.dy = 0
+    self.reset()
+
+  def move(self):
+    self.x += self.dx
+    self.y += self.dy
+    if self.x > 500 or self.x < -64 or self.y > 500 or self.y < -64:
+      self.reset()
+
+  def reset(self):
+    direction = randint(1, 4)
+    if direction == 1:
+      self.x = -64
+      self.y = random.choice(lanes)
+      self.dx = (randint(0, 200) / 100) + 1
+      self.dy = 0
+    elif direction == 2:
+      self.x = 500
+      self.y = random.choice(lanes)
+      self.dx = ((randint(0, 200) / 100) + 1) * -1
+      self.dy = 0
+    elif direction == 3:
+      self.x = random.choice(lanes)
+      self.y = -64
+      self.dx = 0
+      self.dy = (randint(0, 200) / 100) + 1
+    else:
+      self.x = random.choice(lanes)
+      self.y = 500
+      self.dx = 0
+      self.dy = ((randint(0, 200) / 100) + 1) * -1  
+
+# -------------------------------------------
+# Player
+
+
 class Player(GameObject):
   def __init__(self):
     super(Player, self).__init__(0, 0, 'player.png')
@@ -66,20 +108,24 @@ class Player(GameObject):
     self.reset()
 
   def left(self):
-     if self.dx >= 100:
-       self.dx -= 100
+    if self.pos_x > 0:
+      self.pos_x -= 1
+    self.update_dx_dy()
 
   def right(self):
-    if self.dx <= 300:
-      self.dx += 100
+    if self.pos_x < len(lanes) - 1:
+      self.pos_x += 1
+    self.update_dx_dy()
 
   def up(self):
-    if self.dy >= 100:
-      self.dy -= 100
+    if self.pos_y > 0:
+      self.pos_y -= 1
+    self.update_dx_dy()
 
   def down(self):
-    if self.dy <= 300:
-      self.dy += 100
+    if self.pos_y < len(lanes) - 1:
+      self.pos_y += 1
+    self.update_dx_dy()
 
   def move(self):
     self.x -= (self.x - self.dx) * 0.25
@@ -89,15 +135,24 @@ class Player(GameObject):
     self.x = lanes[self.pos_x]
     self.y = lanes[self.pos_y]
     self.dx = self.x
-    self.dy = self.y 
-
+    self.dy = self.y
+  
   def update_dx_dy(self):
     self.dx = lanes[self.pos_x]
-    self.dy = lanes[self.pos_y]        
+    self.dy = lanes[self.pos_y]  
+
+all_sprites = pygame.sprite.Group()                  
 
 apple = Apple()
 strawberry = Strawberry()
 player = Player()
+bomb = Bomb()
+
+# Add sprites to group
+all_sprites.add(player)
+all_sprites.add(apple)
+all_sprites.add(strawberry)
+all_sprites.add(bomb)
 
 clock = pygame.time.Clock()
 
@@ -128,10 +183,11 @@ while running:
   strawberry.render(screen)
   player.move()
   player.render(screen)
+  bomb.move()
+  bomb.render(screen)
   # Update the window
   pygame.display.flip()
   # tick the clock!
   clock.tick(20)
-
 
 
